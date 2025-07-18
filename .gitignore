@@ -1,0 +1,23 @@
+# Benchmark results (optional - you may want to track some results)
+results/*.log
+results/temp-*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local environment files
+.env
+.env.local

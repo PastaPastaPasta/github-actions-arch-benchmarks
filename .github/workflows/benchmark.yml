@@ -1,0 +1,292 @@
+name: Cross-Architecture Benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: 'Projects to benchmark (comma-separated: hugo,ripgrep,redis or all)'
+        required: false
+        default: 'all'
+  schedule:
+    # Weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+
+jobs:
+  # Hugo Benchmarks
+  hugo-x86_64:
+    if: contains(github.event.inputs.projects, 'hugo') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Hugo
+        uses: actions/checkout@v4
+        with:
+          repository: gohugoio/hugo
+          ref: v0.120.4
+          
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          
+      - name: Build Hugo (x86_64)
+        run: |
+          echo "::group::Build Hugo"
+          start_time=$(date +%s)
+          go build -v ./...
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test Hugo (x86_64)
+        run: |
+          echo "::group::Test Hugo"
+          start_time=$(date +%s)
+          go test -v ./...
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## Hugo x86_64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  hugo-arm64:
+    if: contains(github.event.inputs.projects, 'hugo') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - name: Checkout Hugo
+        uses: actions/checkout@v4
+        with:
+          repository: gohugoio/hugo
+          ref: v0.120.4
+          
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          
+      - name: Build Hugo (ARM64)
+        run: |
+          echo "::group::Build Hugo"
+          start_time=$(date +%s)
+          go build -v ./...
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test Hugo (ARM64)
+        run: |
+          echo "::group::Test Hugo"
+          start_time=$(date +%s)
+          go test -v ./...
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## Hugo ARM64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  # ripgrep Benchmarks
+  ripgrep-x86_64:
+    if: contains(github.event.inputs.projects, 'ripgrep') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ripgrep
+        uses: actions/checkout@v4
+        with:
+          repository: BurntSushi/ripgrep
+          ref: 14.0.3
+          
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build ripgrep (x86_64)
+        run: |
+          echo "::group::Build ripgrep"
+          start_time=$(date +%s)
+          cargo build --release
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test ripgrep (x86_64)
+        run: |
+          echo "::group::Test ripgrep"
+          start_time=$(date +%s)
+          cargo test --release
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## ripgrep x86_64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  ripgrep-arm64:
+    if: contains(github.event.inputs.projects, 'ripgrep') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - name: Checkout ripgrep
+        uses: actions/checkout@v4
+        with:
+          repository: BurntSushi/ripgrep
+          ref: 14.0.3
+          
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build ripgrep (ARM64)
+        run: |
+          echo "::group::Build ripgrep"
+          start_time=$(date +%s)
+          cargo build --release
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test ripgrep (ARM64)
+        run: |
+          echo "::group::Test ripgrep"
+          start_time=$(date +%s)
+          cargo test --release
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## ripgrep ARM64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  # Redis Benchmarks
+  redis-x86_64:
+    if: contains(github.event.inputs.projects, 'redis') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Redis
+        uses: actions/checkout@v4
+        with:
+          repository: redis/redis
+          ref: 7.2.3
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential tcl
+          
+      - name: Build Redis (x86_64)
+        run: |
+          echo "::group::Build Redis"
+          start_time=$(date +%s)
+          make -j$(nproc)
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test Redis (x86_64)
+        run: |
+          echo "::group::Test Redis"
+          start_time=$(date +%s)
+          make test
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## Redis x86_64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  redis-arm64:
+    if: contains(github.event.inputs.projects, 'redis') || github.event.inputs.projects == 'all' || github.event.inputs.projects == ''
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - name: Checkout Redis
+        uses: actions/checkout@v4
+        with:
+          repository: redis/redis
+          ref: 7.2.3
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential tcl
+          
+      - name: Build Redis (ARM64)
+        run: |
+          echo "::group::Build Redis"
+          start_time=$(date +%s)
+          make -j$(nproc)
+          build_end_time=$(date +%s)
+          echo "BUILD_TIME=$((build_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Test Redis (ARM64)
+        run: |
+          echo "::group::Test Redis"
+          start_time=$(date +%s)
+          make test
+          test_end_time=$(date +%s)
+          echo "TEST_TIME=$((test_end_time - start_time))" >> $GITHUB_ENV
+          echo "::endgroup::"
+          
+      - name: Summary
+        run: |
+          total_time=$((BUILD_TIME + TEST_TIME))
+          echo "## Redis ARM64 Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${BUILD_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${TEST_TIME}s |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | ${total_time}s |" >> $GITHUB_STEP_SUMMARY
+
+  # Aggregate Results
+  aggregate-results:
+    needs: [hugo-x86_64, hugo-arm64, ripgrep-x86_64, ripgrep-arm64, redis-x86_64, redis-arm64]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate Summary
+        run: |
+          echo "# Cross-Architecture Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Summary Table" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | x86_64 Build | x86_64 Test | x86_64 Total | ARM64 Build | ARM64 Test | ARM64 Total |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------------|-------------|-------------|-------------|------------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Hugo    | See job     | See job     | See job     | See job     | See job    | See job     |" >> $GITHUB_STEP_SUMMARY
+          echo "| ripgrep | See job     | See job     | See job     | See job     | See job    | See job     |" >> $GITHUB_STEP_SUMMARY
+          echo "| Redis   | See job     | See job     | See job     | See job     | See job    | See job     |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Notes" >> $GITHUB_STEP_SUMMARY
+          echo "- Times are in seconds" >> $GITHUB_STEP_SUMMARY
+          echo "- Results may vary due to runner load and caching" >> $GITHUB_STEP_SUMMARY
+          echo "- See individual job logs for detailed timing information" >> $GITHUB_STEP_SUMMARY
